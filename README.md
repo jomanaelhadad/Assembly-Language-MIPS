@@ -9,7 +9,7 @@ MIPS (Microprocessor without Interlocked Pipeline Stages) is a Reduced Instructi
  ### Core Features of MIPS Architecture 
  1. **RISC Design Philosophy:** It uses a smaller, streamlined set of instructions compared to Complex Instruction Set Computers (CISC) like x86, making hardware decoding faster and more efficient
    
- 3. **Load-Store Architecture:** Arithmetic and logic operations happen strictly inside CPU registers. Main memory is only touched using specialized load and store instructions.
+ 2. **Load-Store Architecture:** Arithmetic and logic operations happen strictly inside CPU registers. Main memory is only touched using specialized load and store instructions.
 
  3.**Fixed Instruction Length:** Every MIPS instruction is strictly 32 bits (4 bytes) wide, which simplifies the process of fetching and decoding instructions.
 
