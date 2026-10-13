@@ -1,3 +1,6 @@
+## About 
+- Just some basic MIPS code to document my uhh MIPS learning...
+
 ## What is MIPS? 
 MIPS (Microprocessor without Interlocked Pipeline Stages) is a Reduced Instruction Set Computer (RISC) microprocessor architecture. 
 
@@ -11,4 +14,3 @@ MIPS (Microprocessor without Interlocked Pipeline Stages) is a Reduced Instructi
  5. **Pipelining:** The architecture breaks instruction execution down into 5 distinct pipeline stages (Fetch, Decode, Execute, Memory Access, and Write-Back) so multiple instructions overlap and process simultaneously
  6. **Three-Operand Format:** Most arithmetic instructions use a destination and two source operands (e.g., adding two registers and saving the result in a third).
 
-#### This repository is used to document basic MIPS programs. 
