@@ -9,4 +9,8 @@ main:
 	li $v0, 3 # syscall for printing double 
 	add.d $f12, $f2, $f0 # passing the value as argument f12 for doubles and floats 
 	syscall 
+
+	# exit the program 
+	li $v0, 10
+	syscal 
 	

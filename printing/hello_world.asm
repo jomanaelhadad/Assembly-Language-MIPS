@@ -6,4 +6,8 @@
         # printing to the screen 
         li $v0, 4
         la $a0, message 
-        syscall 
+        syscall
+
+    # exit the program 
+    li $v0, 10
+    syscall 
