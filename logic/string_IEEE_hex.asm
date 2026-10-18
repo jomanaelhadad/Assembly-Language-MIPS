@@ -1,3 +1,25 @@
+# Write a program that prompts the user to enter a real number in form of xxx.yyy
+# Read the user input as a string using syscall 8
+# STAGE 1: 
+    # Parse through the user input string and find where the decimal point is and if the first byte is an ascii 45 ( - ) 
+    # If the first byte is equal to a minus sign jump to negative label where we will later on negate the float answer 
+    # Convert the string from before the decimal point as the whole number part
+    # Convert the string after the decimal point as the fraction part
+# STAGE 2:
+    # Convert both parts into float using co-processor 1 and float conversion 
+    # Save both conversion in separate registers 
+    # Negate the float answer is needed ( condition ) 
+# STAGE 3 
+    # Convert the float to IEEE from 
+    # Since each word is 32 bits
+
+        # 1 bit for sign ( 1 = negative, 0 = positive ) 
+        # 8 bits for exponent 
+        # 23 bits for fraction part 
+    # Using shifts and masking we can extract those bits 
+    # We are interested in the most significant bits ( so we shift from right and take 31 bits ) 
+    # We shift 23 for the 8 expo bits 
+    # We shift more ( uhh idk its confusing ) 
 .data 
 	str2float: .float 0 
 	fraction: .word 0 
