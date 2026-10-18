@@ -1,25 +1,116 @@
-# Write a program that prompts the user to enter a real number in form of xxx.yyy
-# Read the user input as a string using syscall 8
-# STAGE 1: 
-    # Parse through the user input string and find where the decimal point is and if the first byte is an ascii 45 ( - ) 
-    # If the first byte is equal to a minus sign jump to negative label where we will later on negate the float answer 
-    # Convert the string from before the decimal point as the whole number part
-    # Convert the string after the decimal point as the fraction part
-# STAGE 2:
-    # Convert both parts into float using co-processor 1 and float conversion 
-    # Save both conversion in separate registers 
-    # Negate the float answer is needed ( condition ) 
-# STAGE 3 
-    # Convert the float to IEEE from 
-    # Since each word is 32 bits
+# Plan of my implementation 
+# 1. I made the program organised in sections to keep track of my code 
+# Below is a rough plan of the logic / thought processes behind my implementaion of the assignment 
 
-        # 1 bit for sign ( 1 = negative, 0 = positive ) 
-        # 8 bits for exponent 
-        # 23 bits for fraction part 
-    # Using shifts and masking we can extract those bits 
-    # We are interested in the most significant bits ( so we shift from right and take 31 bits ) 
-    # We shift 23 for the 8 expo bits 
-    # We shift more ( uhh idk its confusing ) 
+# Phase 1: Getting user input and parsing the string 
+	#1. prompt user 
+	#2. read user input as a string ( syscall 8 ) at label inputStr 
+	#3. copy the register holding the address of inputStr from a0 to t0 
+	#4. have s0 initialised to 0 for determining the negative bit ( used to negate the floating point result later on )
+	#5. have an accumlator for keeping track of the integer 
+	#6. ParseString: 
+		# load byte of offset 0 + address of t0 into t2 -> t2 has the first byte 
+		# move t2 into argument register for procedure of inputSrtEnd 
+		# check whether the end character of the string is found 
+		# branch to endParsing 
+		# else: 
+			# if the first byte in t2 is equal to a minus ( ascii 45 ) branch to negativeNum
+			# if a the first byte ( later on going to loop ) is equal to a decimal, branch to decimalPoint 
+			# converting the first byte from ascii to integer using string2int procedure 
+			# jump back to parseString to start a loop 
+		# negativeNum:
+			# assign s0 to 1 
+			# increment the pointer to the next byte in t0 
+			# jump to parseString 
+		# decimalPoint:
+			# initialise a fraction counter 
+			# increment the pointer to the next byte in t0 
+			# fractionLoop:
+				# load byte of 0 offset + address of t0 into t3 -> t3 has first byte 
+				# move t3 to a0 for argument 
+				# call inputStrEnd procedure again 
+				# branch if a end character in the string is found to endParsing 
+				# convert the string to ascii 
+		#e endParsing:
+			# using floating point operands ( dealing with co-procssor 1 ) 
+			# move to co-procssor 1 value inside t5 -> whole number part to f0 
+			# convert into float 
+			# load value of 1000.0 into f3 
+			# convert fraction part ( t2 ) into float in f1 
+			# divide f1 / f3 ( f1 / 1000.0 )  or ( fraction / 1000.0 ) 
+			# add the divided fraction and converted integer to f2 
+			# using another register check is value inside s0 is 1 
+			# if it is 1, negate the result of the float 
+			# else:
+				# store the float 
+				# jump to singleForm 
+# Phase 2: Converting the float to IEEE Form ( hardest part ) 
+# singleForm:
+	# load address str2float into t1
+	# load word offset 0 + address of t1 into t2  ( t2 has value inside address t2 ) 
+	# extract the sign but ( 1 or 0 )
+	# shift to the right 31 ( MSB ) 
+	# extract the exponent bits ( 8 bits ) 
+	# 31 - 8 = 23: therefore we will shift 23 bits 
+	# use a mask of 1111 1111 or 0xFF to extract the expo bits 
+	# mask the result of the 23 bits by masking 0x7FFFFF or 23 binary 1's 
+	# issue: 
+		# immediate instructions can only hold 16 bits for constants 
+		# to solve the issue we load 0x7FFFFF into a register 
+		# we and both registers 
+# converHex:
+	# load the address of hexValue into t7
+	# convert sign bit to ascii ( from hex to ascii )
+	# store value of t3 into t7 offset 0 ( first byte in t7 is the sign bit) 
+	# increment pointer 
+	# use printSeparator procedure to print '|' 
+	# increment pointer
+	# convert exponent to ascii 
+	# use 1111 mask and shift by 4 bits ( hex ) 
+	# convert the first digit of hex to ascii ( 0-9 , add 48, 10 -15 add 55) 
+	# using procedure of printHex to convert 
+	# convert both digits 
+	# print a separator 
+	# jump to convertFraction 
+# convertFraction:
+	# shift 20 bits to the right
+	# mask by 7 ( 111 ) - extracting the first 3 bits 
+	# store it into t7
+	# increment pointer 
+	# convert the 20 bits into ascii 
+# fractionHex:
+	# shift right logical variable 16 
+	# mask by 1111 
+	# convert to ascii using printHex procedure 
+	# check if the number of hex reached 5 ( fraction part in hex -> 5 hex digits ) 
+	# if it does, print the result and store a null 0 into t7
+	# else jump back to fractionHex
+# Phase3: Procedures 
+# printResult:
+	# print result 
+	# print hexValue 
+	# terminate the program 
+# inputStrEnd:
+	# load \n ( ascii 10 ) 
+	# compare a0 with 10 
+	# compare 10  with zero ( \0) 
+	# if return value is 0 an end character was found 
+	# if return value is 1 no end character was found 
+# string2Int:
+	# subtract 48 from argument 
+	# multiply accumlator arguemnt by 10 ( place digit value )
+	# add both arguments 
+	# return address 
+# printSeparator:
+	# load ascii separator number ( 124 )
+	# arguement of a0 and a1 here a0 is the register with byte and a0 is the destination register 
+# printHex:
+	# compare if a0 ( first agrument) is less than 10 
+	# if true:
+		# jump to add 48 
+	# else:
+		# add 55
+	# return the hex in return register of v0 
 .data 
 	str2float: .float 0 
 	fraction: .word 0 
