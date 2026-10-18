@@ -27,11 +27,15 @@ main:
 	# t0 = inputStr
 	# locating the decimal point in the string 
 	li $t1, 46 # loading t3 = 46 ( ascii for '.' ) 
+	li $s0, 0 # sign flag
+	# loading '-' to check for negative number
 	
 	# integer accumlator 
 	li $t5, 0
 	convertingInt:
 		lb $t2, 0($t0) # byte inside t0 
+		
+		beq $t2, 45, negativeNum 
 		
 		# checking decimal point 
 		beq $t2, $t1, decimalPoint 
@@ -52,7 +56,10 @@ main:
 		addi $t0, $t0, 1
 		
 		j convertingInt
-		
+	negativeNum:
+		li $s0, 1
+		addi $t0, $t0, 1
+		j convertingInt 
 		
 	decimalPoint: 
 		# initialise the counter 
@@ -113,9 +120,16 @@ main:
 	
 	# f2 = int(float) + fraction(float) 
 	add.s $f2, $f0, $f1
+	li $t9, 1 
+	beq $s0, $t9, negateFloat
+	j storeFloat
+	
+	negateFloat:
+		neg.s $f2, $f2
 	
 	# store f2 into str2float 
-	s.s $f2, str2float
+	storeFloat: 
+		s.s $f2, str2float
 	
 	
 	# convert the whole number part 
@@ -129,7 +143,7 @@ main:
 	# str2float ( f2) has the float number 
 	
 	# loading the raw bits 
-IEEEConversion: 
+	
 	la $t1, str2float
 	lw $t2, 0($t1) 
 	
@@ -166,21 +180,19 @@ IEEEConversion:
 	
 	# convert expo from hex to ascii character 
 	move $t3, $t4 
-	
 	andi $t6, $t3, 0xF
-	
 	srl $t3, $t4, 4
-	# convert to ascii 
-	addi $t3, $t3, 48 
 	
-	# store the expo in buffer
-	sb $t3, 0($t7) 
-	
-	# increment the pointer 
+	# convert the first digit of the expo to ascii 
+	move $a0, $t3 
+	jal printHex 
+	sb $v0, 0($t7) 
 	addi $t7, $t7, 1 
 	
-	addi $t6, $t6, 48 
-	sb $t6, 0($t7) 
+	# convert the second digit of the expo to ascii 
+	move $a0, $t6
+	jal printHex 
+	sb $v0, 0($t7) 
 	addi $t7, $t7, 1 
 	
 		
@@ -210,41 +222,56 @@ IEEEConversion:
 	# counter  
 	 li $t0, 0 
 	 li $t9, 16 
-	printingHex:
-		# shift the bits 
+	 
+	fractionHex:
+	
 		srlv $t1, $t5, $t9 
 		andi $t2, $t1, 0xF 
 		
-		# convert to ascii 
-		blt $t2, 10, add48 
-		addi $t2, $t2, 55
-		j storeHex 
+		move $a0, $t2
+		jal printHex 
+		sb $v0, 0($t7) 
+		addi $t7, $t7, 1 
 		
-		add48:
-			addi $t2, $t2, 48
+		addi $t0, $t0, 1 
+		addi $t9, $t9, -4
+			
+		beq $t0, 5, endHex 
+			
+		j fractionHex 
 		
-		storeHex:
-
-			# store the byte 
-			sb $t2, 0($t7) 
-			addi $t7, $t7, 1 
-			
-			addi $t0, $t0,1 
-			addi $t9, $t9, -4
-			
-			beq $t0, 5, endHex 
-			
-			j printingHex 
 		endHex: 
 			sb $zero, 0($t7) 
 			
+			j printingResult
+			
 	# printing your result is: 
-	li $v0, 4
-	la $a0, result 
-	syscall 
+	printingResult:
+		li $v0, 4
+		la $a0, result 
+		syscall 
 	
-	# printing 
-	li $v0, 4
-	la $a0, hexValue
-	syscall 
-     
+		# printing 
+		li $v0, 4
+		la $a0, hexValue
+		syscall 
+		
+	end: 
+		li $v0, 10
+		syscall 
+	
+	
+	
+	# proecedure for printing hex 
+	printHex:
+		blt $a0, 10, add48 
+		addi $a0, $a0, 55
+		j returnHex
+		
+		add48:	
+			addi $a0, $a0, 48 
+			
+		returnHex:
+			move $v0, $a0 
+			jr $ra
+		
