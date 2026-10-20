@@ -414,5 +414,4 @@ main:
 			
 		returnHex:
 			move $v0, $a0 
-			jr $ra
-		
+			jr $ra 
